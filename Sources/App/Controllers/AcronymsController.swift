@@ -3,7 +3,7 @@ import Fluent
 
 struct AcronymsController: RouteCollection {
     func boot(router: Router) throws {
-        let acronymsRoute = router.grouped("api", "acronym")
+        let acronymsRoute = router.grouped("api", "acronyms")
         acronymsRoute.get(use: getAllHandler)
         acronymsRoute.post(use: createHandler)
         acronymsRoute.get(Acronym.parameter, use: getHandler)
@@ -12,7 +12,6 @@ struct AcronymsController: RouteCollection {
         acronymsRoute.get("search", use: searchHandler)
         acronymsRoute.get("first", use: getFirstHandler)
         acronymsRoute.get("sorted", use: sortedHandler)
-        acronymsRoute.get(Acronym.parameter, "user", use: getUserHandler)
     }
     func createHandler(_ req: Request) throws -> Future<Acronym> {
         return try req.content.decode(Acronym.self).flatMap(to: Acronym.self) { (acronym) in
@@ -44,7 +43,6 @@ struct AcronymsController: RouteCollection {
                            req.content.decode(Acronym.self)) { (acronym, updatedAcronym) in
                             acronym.short = updatedAcronym.short
                             acronym.long = updatedAcronym.long
-                            acronym.userID = updatedAcronym.userID
                             return acronym.save(on: req)
         }
     }
@@ -98,12 +96,6 @@ struct AcronymsController: RouteCollection {
     //    Create a query for Acronym and use sort(_:_:) to perform the sort. This function takes the field to sort on and the direction to sort in. Finally use all() to return all the results of the query.
     //    Build and run the application, then create a new request in RESTed:
     
-    func getUserHandler(_ req: Request) throws -> Future<User> {
-        return try req.parameters.next(Acronym.self)
-            .flatMap(to: User.self) { (acronym) in
-                try acronym.user.get(on: req)
-            }
-    }
     
 }
 
